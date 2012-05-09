@@ -144,7 +144,30 @@ convertToComplement<-function(x,fGenotype=TRUE){
 
 #################################
 ###
-### FUNCTION: convertColsToNumeric
+### FUNCTION: convertColsToNumeric - second version
+###
+#################################
+#   Converts columns containing numbers to numeric
+#
+# Args: 
+# data frame, column indices
+#
+# Returns:
+# original DF with specified columns changed
+# 
+convertColsToNumeric<-function(dfConv){
+	for (i in 1:ncol(dfConv)){
+	 	if (suppressWarnings(sum(is.na(as.numeric(dfConv[,i])))==0)){
+	 		dfConv[,i]=as.numeric(dfConv[,i])
+		}
+	}
+	return(dfConv)
+}
+
+
+#################################
+###
+### FUNCTION: convertColsToNumeric - first version
 ###
 #################################
 #   Converts specified columns to numeric
@@ -155,49 +178,14 @@ convertToComplement<-function(x,fGenotype=TRUE){
 # Returns:
 # original DF with specified columns changed
 # 
-convertColsToNumeric<-function(dfConv,colIndices){
-	for (i in colIndices){
-		dfConv[,i]=as.numeric(dfConv[,i])
-		}
-		return(dfConv)
-		}
+# convertColsToNumeric<-function(dfConv,colIndices){
+	# for (i in colIndices){
+		# dfConv[,i]=as.numeric(dfConv[,i])
+		# }
+		# return(dfConv)
+		# }
+
 		
-		
-#################################
-###
-### FUNCTION: conformBreedNames
-###
-#################################
-# corrects inconsistencies between dog abbreviations and mine
-# intended to standardize or normalize breed names
-#
-# Args: 
-# character vector
-#
-# Returns:
-# character vector 
-# 
-conformBreedNames<-function(inputBreedNames=c("LAB","PUG")){
-## the "correct" breed names are in "breedInfo"
-## three letter abbreviations are followed by a "-" character
-inputBreedNames =as.vector(breedFreq$Abbrev)
-inputBreedNames =as.vector(inputBreedNames)
-
-alternateNames=data.frame("PTWD","PWD")
-colnames(alternateNames)=c("correct", "other")
-fContainsAlternateNames=inputBreedNames %in% alternateNames$other
-if (sum(fContainsAlternateNames)>0){
-	inputBreedNames[fContainsAlternateNames]= alternateNames$correct[match(alternateNames$other, inputBreedNames[fContainsAlternateNames])]
-}
-
-## check for missing dash
-threeCharNames=inputBreedNames[nchar(inputBreedNames)==3]
-threeCharNamesPlusDash=pasteNS(threeCharNames,"-")
-fFixWithDash= threeCharNamesPlusDash %in% breedInfo$Abbrev
-inputBreedNames[nchar(inputBreedNames)==3][fFixWithDash]= threeCharNamesPlusDash[fFixWithDash]
-
-return(inputBreedNames)
-}
 #################################
 ###
 ### FUNCTION: printNumberedVector
@@ -237,7 +225,7 @@ cat(paste(1:length(someVector ), someVector,"\n"))
 summarizeCNV<-function(cnvFileName,outputFileName){
 
 ## for testing
-## cnvFileName ="/Users/bealehc/Documents/Dropbox/ostrander/projects/stanford-sequenced genomes/cnv/chr15 great dane vs scottie/scottish_terrier.high.chr15.CNV.hits-vs-great_dane.high.chr15.CNV.hits.log2-0.6.pvalue-0.001.minw-4.cnv"
+## cnvFileName ="*CNV.hits.log2-0.6.pvalue-0.001.minw-4.cnv"
 if (! file.exists(outputFileName)) {
 	library(cnv)
 	cnvFileData <- read.delim(cnvFileName)
@@ -394,7 +382,16 @@ prettyAggregate<-function(df, valname, byname, passFUN, fnDesc, fReplaceValName=
 ##
 
 cbindList <- function(x) Reduce("cbind", x)
-rbindList <-function(x) Reduce("rbind",x)
+#rbindList <-function(x) Reduce("rbind",x)
+rbindList<-function(x) {  ## formats columns as numeric if they contain only numbers
+	bunchaRows=Reduce("rbind",x)
+	 for (c in 1:ncol(bunchaRows)){
+	 	if (suppressWarnings(sum(is.na(as.numeric(as.character(bunchaRows[,c]))))==0)){
+	 		bunchaRows[,c]=as.numeric(bunchaRows[,c])
+	 	}
+	 }
+	 return(bunchaRows)
+}
 
 
 #################################
@@ -757,31 +754,6 @@ if (fPlotFromZero) {
 	 
 	 
 
-#################################
-###
-### FUNCTION: saveSettings
-###
-#################################
-# Save current par settings
-#
-saveSettings<-function(op=par()){
-	save(op,file="/Users/bealehc/Documents/Dropbox/computer/R/commonParAsOp.Rdata")
-	}
-	
-	
-#################################
-###
-### FUNCTION: loadSettings
-###
-#################################
-# load previously saved settings
-#
-loadSettings <-function(){
-	load("/Users/bealehc/Documents/Dropbox/computer/R/commonParAsOp.Rdata")
-	}
-
-	
-	
 	
 #################################
 ###
@@ -986,7 +958,6 @@ plotMultipleCors <-function(plotData, vColors="",ylabText="", xlabText ="Breed a
 plotCors<-function(plotData, vColors="",ylabText=colnames(plotData)[2], xlabText =colnames(plotData)[1],legendPos="topleft",fNormalizeY=TRUE,...){
 ## plot data should have x values in first col, and any number of cols after that can be Y
 #test plotData= gAcdDesc[,c("mean","se","sd","Height","Weight")]
-# temp test plotData=data.frame(nationalDogPopularity$pctTotal, localDogPopulatory$pctTotal,nationalDogPopularity$pctTotal)
 #plotData=na.omit(plotData)
  x= plotData[,1]
  	if (fNormalizeY) {
