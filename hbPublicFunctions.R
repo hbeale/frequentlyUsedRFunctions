@@ -24,6 +24,32 @@ n <- base::names;
 as.dataframe<-base::data.frame;
 
 
+
+#################################
+###
+### FUNCTION: fillDfForRbind
+###
+#################################
+# fills a dataframe with NA data so it can be easily bound to another dataframe
+#
+# Args: the bigger dataframe and the smaller one to be bound 
+# it doesn't do the binding
+#
+# Returns: the padded data frame
+# 
+# 
+fillDfForRbind<-function(biggerDF, smallerDF){
+#	biggerDF=descendantPedigreeInfo
+#	smallerDF=entriesToFillOutTree
+	if (sum(! colnames(smallerDF) %in% colnames(biggerDF))) print("trouble in river city")
+	newDF=biggerDF[1,]
+	newDF[1,]=NA
+	newDF[1:nrow(smallerDF), colnames(smallerDF) ]=smallerDF
+	return(newDF)
+}
+
+
+
 #################################
 ###
 ### FUNCTION: sourceDir
