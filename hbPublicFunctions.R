@@ -31,8 +31,16 @@ as.dataframe<-base::data.frame;
 #################################
 # 
 #
-# 
-bytesToGB<- function(byteValues){
+# Args: 
+# vector of numbers
+#
+# Returns:
+# vector of numbers
+
+bytesToGB<-function(byteValues){
+	return(byteValues/1024^3)
+	}
+	bytesToGB<- function(byteValues){
 	return(byteValues/1024^3)
 }
 
@@ -88,23 +96,7 @@ sourceDir <- function(path, trace = TRUE, ...) {
     }
  }
 
-#################################
-###
-### FUNCTION: bytesToGB
-###
-#################################
-# convert bytes to GB
-#
-# Args: 
-# vector of numbers
-#
-# Returns:
-# vector of numbers
 
-bytesToGB<-function(byteValues){
-	return(byteValues/1024^3)
-	}
-	
 	
 #################################
 ###
