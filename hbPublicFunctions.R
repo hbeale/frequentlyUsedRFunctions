@@ -24,6 +24,22 @@ n <- base::names;
 as.dataframe<-base::data.frame;
 
 
+#################################
+###
+### FUNCTION: convert file sizes
+###
+#################################
+# 
+#
+# 
+bytesToGB<- function(byteValues){
+	return(byteValues/1024^3)
+}
+
+GB2bytes<-function(gbValues){
+	return(gbValues*1024^3)
+}
+
 
 #################################
 ###
@@ -422,12 +438,25 @@ prettyAggregate<-function(df, valname, byname, passFUN, fnDesc, fReplaceValName=
 # Returns:
 # dataframe
 # 
-##
+# Updates
+# ## formats columns as numeric if they contain only numbers
+# 6/8/2012 - fill in shorter vectors in list
 
-cbindList <- function(x) Reduce("cbind", x)
+
+# cbindList <- function(x) Reduce("cbind", x)
+cbindList<-function(x, fill=TRUE){  ## tries to work on 
+	itemLengths=sapply(x, length)
+	fillExtent=max(itemLengths)
+	xFilled=lapply(x, function(y) c(y,rep(NA, fillExtent-length(y))))
+	data.frame(t(Reduce("cbind", xFilled)), row.names=NULL)
+}
+
 #rbindList <-function(x) Reduce("rbind",x)
 rbindList<-function(x) {  ## formats columns as numeric if they contain only numbers
-	bunchaRows=Reduce("rbind",x)
+	itemLengths=sapply(x, length)
+	fillExtent=max(itemLengths)
+	xFilled=lapply(x, function(y) c(y,rep(NA, fillExtent-length(y))))
+	bunchaRows=Reduce("rbind",xFilled)
 	 for (c in 1:ncol(bunchaRows)){
 	 	if (suppressWarnings(sum(is.na(as.numeric(as.character(bunchaRows[,c]))))==0)){
 	 		bunchaRows[,c]=as.numeric(bunchaRows[,c])
