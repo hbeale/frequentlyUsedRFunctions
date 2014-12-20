@@ -139,26 +139,6 @@ read.txt<-function (file="", sep="\t", header=TRUE,row.names=NULL, ...){
 
 #################################
 ###
-### FUNCTION: pasteNS
-###
-#################################
-# Paste arguments with no spaces between them
-#
-# Args: 
-# ... (vector of items to paste)
-#
-# Returns:
-# character vector result of paste
-# 
-pasteNS<-function (...){
-	
-	paste(..., sep="")
-	
-	}
-	
-	
-#################################
-###
 ### FUNCTION: convertToComplement
 ###
 #################################
