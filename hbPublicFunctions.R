@@ -1095,3 +1095,48 @@ assocLocus=data.frame(assocLocus)
 assocLocus$locusSize= assocLocus$maxPos-assocLocus$minPos+1
 return(assocLocus)
 }
+
+
+trimPunct= function (x) gsub("^[[:punct:]]+|[[:punct:]]+$", "", x)
+#trimPunct (c("holly_", "holly__", "holly_2_KC23072_", "holly."))
+
+# function to extract read pair id from fastq file name or tar or fastqc result
+
+miserableTestData=c("140618_I1069_FCC4MWGACXX_L4_LSCRHmM121ACAAAPEI-3_1.clean_fastqc", "AH07020812_ACACGA_L002_R1_002.fastq", "E021_0001_20140916_tumor_RNASeq_R1.clean.tar","C021_0001_20140916_tumor_RNASeq.tar", "LS3_GGCTAC_L002_R2_002.fq.gz", "AM163062014_2.fastq.gz", "476_R1.fastq.gz", "486_R1.trimmed.fastq.gz", "home/hbeale/BS35112812_CACACA_L003_001.tar", "C021_0003_001409_BR_Whole_T3_TSMRU_A07217_R2_fastqc")
+readEndExtractionExpected=c(T, T, T, F, T, T, T, T, F, T)
+
+getReadPairIDFromFq<-function(fileNames= miserableTestData, allowedSuffix=c("_fastqc.zip", "\\.fastq", "\\.fq.gz", "\\.tgz", "\\.fastq.gz", "\\.tar", "_fastqc"), wordsAllowedAfterEndNumber=c("clean", "trimmed")){
+#  extractEndsWithLowConfidencePattern=TRUE
+	# remove path info if any
+	df=data.frame(originalOrder=1:length(fileNames), inputName= fileNames , baseFileName=basename(fileNames))
+	
+	#  strip suffix
+	df$noSuffix= df$baseFileName
+	for (s in allowedSuffix) df$noSuffix =sub(paste0(s, "$"), "", df$noSuffix)
+	
+	# if relevant, strip words that are allowed after end indicator; strip outer punctuation
+	hasEndIndicatorAtStringEnd=grepl("[\\._][R]?[12]$", df $noSuffix) | grepl("[\\._][R]?[12](_[0-9]{3})$",  df $noSuffix)
+
+	df$allowedWordsRemoved= df $noSuffix
+	for (w in wordsAllowedAfterEndNumber) df$allowedWordsRemoved[!hasEndIndicatorAtStringEnd] =sub(w, "", df$allowedWordsRemoved[!hasEndIndicatorAtStringEnd])
+	df$allowedWordsRemoved= trimPunct(df$allowedWordsRemoved)
+
+	# extract read end ids
+	df$readPairID=sub("[\\._][R]?[12]$", "", df$allowedWordsRemoved)
+	df$rawReadEnd =sub("^.*[\\._][R]?([12])$", "\\1", df$allowedWordsRemoved)
+	
+	remainingToParse= df$readPairID == df$allowedWordsRemoved
+
+	df$readPairID[remainingToParse ]=sub("[\\._][R]?[12](_[0-9]{3})$", "\\1",  df$allowedWordsRemoved)[remainingToParse]
+	df$rawReadEnd[remainingToParse]=sub("^.*[\\._][R]?([12])_[0-9]{3}$", "\\1", df$allowedWordsRemoved[remainingToParse])
+	
+	df$readEnd= df$rawReadEnd
+	df$readEnd[! df$rawReadEnd %in% 1:2]=NA
+
+	# check for remaining read end identifiers
+	df$candidateEndIndentifierRemainsInReadPairID=grepl("[\\._][R]?[12]$", df$readPairID) |grepl("[\\._][R]?[12][\\._]", df$readPairID)
+	
+	return(df)
+
+}
+	
